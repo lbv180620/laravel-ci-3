@@ -141,16 +141,22 @@ relaunch:
 	@make publish-redisinsight
 	@make build
 	@make up
-	@make db-set
+	@make $(db)-set
 	@make useradd
-	docker compose exec $(ctr) composer install
-	docker compose exec $(ctr) yarn install
+	@make composer
+	@make yarn
 	@make laravel-env
 	@make laravel-set
 
 # ! 「service "db" is not running container」 relaunchしてdbコンテナがexited(1)のときの対処法
 # Docker Desktopをrestart → もう一度relaunch
 # ※ 一連の流れで処理を実行していくと、dbコンテナが立ち上がらない現象がよく出る。処理を個別で実行すると上手く立ち上がる。
+
+
+#& プロジェクトの作り直し
+reborn:
+	@make destory
+	@make relaunch
 
 
 #**** インフラ環境の切り替え ****
@@ -183,7 +189,7 @@ laravel-set:
 	@make fresh-seed
 
 
-# **** ディレクトリとファイルの作成 ****
+# **** ディレクトリとファイルの作成と削除 ****
 
 # backend単体で使う → mkdir backend
 # backendとfrontendを併用して使う → mkdir backend frontend
@@ -205,23 +211,52 @@ publish-redisinsight:
 	mkdir -p ./infra/redisinsight/sessions
 	sudo chown 1001 ./infra/redisinsight/sessions
 
+file-delete:
+	rm -rf infra/{data,redis,pgadmin4} sqls .vscode && rm .env
+	rm -rf backend frontend infra/{redisinsight,phpmyadmin}
 
-# **** DBの設定 ****
+
+# **** SQLファイルの設定 ****
 
 mysql-set:
-	docker compose exec db bash -c 'mkdir /var/lib/mysql/sql && \
+	docker compose exec db bash -c 'mkdir -p /var/lib/mysql/sql && \
 		touch /var/lib/mysql/sql/query.sql && \
 		chown -R mysql:mysql /var/lib/mysql'
 
 mariadb-set:
-	docker compose exec db bash -c 'mkdir /var/lib/mysql/sql && \
+	docker compose exec db bash -c 'mkdir -p /var/lib/mysql/sql && \
 		touch /var/lib/mysql/sql/query.sql && \
 		chown -R mysql:mysql /var/lib/mysql'
 
 postgres-set:
-	docker compose exec db bash -c 'mkdir /var/lib/postgresql/data/sql && \
+	docker compose exec db bash -c 'mkdir -p /var/lib/postgresql/data/sql && \
 		touch /var/lib/postgresql/data/sql/query.sql && \
 		chown -R postgres:postgres /var/lib/postgresql/data'
+
+
+# **** パーミッションの設定 ****
+
+chown:
+	@make chown-data
+	@make chown-backend
+
+chown-backend:
+	sudo chown -R $(USER):$(GNAME) backend
+
+chown-work:
+	docker compose exec $(ctr) bash -c 'chown -R $$USER_NAME:$$GROUP_NAME /work'
+
+chown-data:
+	sudo chown -R $(USER):$(GNAME) infra/data
+
+chown-mysql:
+	docker compose exec db bash -c 'chown -R mysql:mysql /var/lib/mysql'
+
+chown-mariadb:
+	docker compose exec db bash -c 'chown -R mysql:mysql /var/lib/mysql'
+
+chown-postgres:
+	docker compose exec db bash -c 'chown -R postgres:postgres /var/lib/postgresql/data'
 
 
 # **** ユーザーとグループの設定 ****
@@ -249,7 +284,7 @@ groupadd-client:
 # client-root
 	docker compose exec client bash -c ' \
 		groupadd -g $$GROUP_ID $$GROUP_NAME'
-		
+
 
 # ==== フロントエンドの設定 ====
 
@@ -295,6 +330,9 @@ next-set:
 	cd frontend && yarn install
 	@make tailwind-set
 
+# ^ yarn installでerror : The engine "node" is incompatible with this module. が出たときの対処法
+# https://nashidos.hatenablog.com/entry/2020/08/30/231517
+
 #* Next.jsアプリをgit cloneした場合の手順:
 # ⑴ .husky/-/{.gitignore,husky.sh}のコピーを.husky下に配置
 # ⑵ make next-reset
@@ -335,85 +373,106 @@ codegen-init:
 # How to name the config file?: codegen.yml
 # What script in package.json should run the codegen?: gen-types
 
+
 # ==== docker composeコマンド群 ====
+
+# **** Build & Up ****
+
+build:
+	docker compose build --no-cache --force-rm
 
 up:
 	docker compose up -d
-	
-build:
-	docker compose build --no-cache --force-rm
-	
+
 rebuild:
 	@make build
 	@make up
 
-init:
-	docker compose up -d --build
-	docker compose exec $(ctr) composer install
-	docker compose exec $(ctr) cp .env.example .env
-	@make laravel-set
-	
-remake:
-	@make destroy
-	@make init
-	
+
+# **** Start & Stop ****
+
 start:
 	docker compose start
-	
+
 stop:
 	docker compose stop
-	
-down:
-	docker compose down --remove-orphans
-	
+
 restart:
 	@make stop
 	@make start
-	
+
+
+# **** Down系 ****
+
+# コンテナを消去
+down:
+	docker compose down --remove-orphans
+
+# コンテナを再生成
 reset:
 	@make down
 	@make up
-	
+
+# ソースコード,データ,コンテナ,イメージ,ボリューム,ネットワークを消去
 destroy:
 	@make stop
 	@make chown
 	@make file-delete
 	@make purge
 
+# ボリュームを消去
 destroy-volumes:
 	docker compose down --volumes --remove-orphans
 
+# コンテナ,イメージ,ボリューム,ネットワークを消去
 purge:
 	docker compose down --rmi all --volumes --remove-orphans
 
-file-delete:
-	rm -rf infra/{data,redis,pgadmin4} sqls .vscode && rm .env
-	rm -rf backend frontend infra/{redisinsight,phpmyadmin}
 
-# apt update → GPG error → docker prune
-# https://til.toshimaru.net/2021-03-15
-# https://qiita.com/yukia3e/items/6e2536dd90d34a8b01cc
-# docker image prune -f
-# docker container prune -f
+# **** インフラのみ再生成 ****
 
-# ---- log関連 ----
+# インフラを再ビルド
+init:
+	@make rebuild
+	@make chown-$(db)
+	@make useradd
+	@make composer
+	@make yarn
+	@make clear-cache
+	@make laravel-set
+
+# ソースコードとデータは消さずに、インフラだけを作り直す
+remake:
+	@make purge
+	@make init
+
+
+# **** log関連 ****
 
 logs:
 	docker compose logs
+
 logs-watch:
 	docker compose logs --follow
+
 log-web:
 	docker compose logs web
+
 log-web-watch:
 	docker compose logs --follow web
+
 log-app:
 	docker compose logs app
+
 log-app-watch:
 	docker compose logs --follow app
+
 log-db:
 	docker compose logs db
+
 log-db-watch:
 	docker compose logs --follow db
+
 
 # ==== コンテナ操作コマンド群 ====
 
@@ -424,7 +483,7 @@ app-usr:
 	docker compose exec -u $(USER) app bash
 stop-app:
 	docker compose stop app
-	
+
 
 # web
 web:
@@ -433,14 +492,14 @@ web-usr:
 	docker compose exec -u $(USER) web bash
 stop-web:
 	docker compose stop web
-	
+
 
 # db
 db:
 	docker compose exec db bash
 db-usr:
 	docker compose exec -u $(USER) db bash
-	
+
 
 # mysql
 sql:
@@ -465,18 +524,18 @@ query:
 	cp ./sqls/sql/query.sql ./infra/data/sql/query.sql
 # cp ./sqls/sql/query.sql ./_data/sql/query.sql
 	@make chown-$(db)
-	
+
 cp-sql:
 	@make chown-data
 	cp -r -n ./sqls/sql/** ./data/sql
 # cp -r -n ./sqls/sql ./_data/sql
 	@make chown-$(db)
-	
-	
+
+
 # redis
 redis:
 	docker compose exec redis redis-cli --raw
-	
+
 
 # client
 client:
@@ -505,7 +564,7 @@ laravel-v:
 art-l:
 	docker compose exec $(ctr) php artisan list
 
-# ---- マイグレーション関連 ----
+# **** Migration関連 ****
 
 # Laravel 6.x データベース：マイグレーション
 # https://readouble.com/laravel/6.x/ja/migrations.html
@@ -549,7 +608,6 @@ mkmigr:
 # ※ docker compose exec $(ctr) composer require doctrine/dbal が必要
 mkmige:
 	docker compose exec $(ctr) php artisan make:migration edit_$(col)_of_$(table)_table --table=$(table)
-
 
 
 # .envファイルのDB_DATABASEで指定されたデータベースにマイグレートする
@@ -635,7 +693,8 @@ migfresh-s:
 # - そのため、紐づけ元のテーブルのマイグレーションファイルを中間テーブルのマイグレーションファイルより先に作成する必要がある。
 # - マイグレーションの実行はファイルが作られた順
 
-# ---- モデル関連 ----
+
+# **** Model関連 ****
 
 # Eloquentチートシート
 # https://blog.renatolucena.net/post/eloquent-relationships-cheat-sheet
@@ -676,7 +735,8 @@ mkmodel-all:
 # echo Str::plural('単語'); // 単数形 → 複数形
 # echo Str::singular('単語'); // 複数形 → 単数形
 
-# ---- コントローラ関連 ----
+
+# **** Controller関連 ****
 
 # Laravel 6.x コントローラ
 # https://readouble.com/laravel/6.x/ja/controllers.html
@@ -720,7 +780,8 @@ mkctrl-r-%:
 mkctrl-r:
 	docker compose exec $(ctr) php artisan make:controller $(model)Controller -r
 
-# ---- ルーティング関連 ----
+
+# **** Routing関連 ****
 
 # Laravel 6.x ルーティング
 # https://readouble.com/laravel/6.x/ja/routing.html
@@ -735,8 +796,9 @@ route-list:
 route-list-name-%:
 	docker compose exec $(ctr) php artisan route:list --name $(@:route-list-name-%=%)
 
+# ------------
 
-# **** Laravel 8で前のバージョンのルーティングで、コントローラーの指定する方法 ****
+#? Laravel 8で前のバージョンのルーティングで、コントローラーの指定する方法
 
 # 参考記事:
 # https://qiita.com/M_Ishikawa/items/8527c3193072226f0686
@@ -760,7 +822,7 @@ route-list-name-%:
 # Route::apiResource('tasks', 'TaskController');
 
 
-# ---- Seeder & Factory関連 ----
+# **** Seeder & Factory関連 ****
 
 # Laravel 6.x データベース：シーディング
 # https://readouble.com/laravel/6.x/ja/seeding.html
@@ -768,7 +830,9 @@ route-list-name-%:
 # SeederクラスやFactoryクラスを作成・編集した場合、Composerのオートローダを再生成するために、dump-autoloadコマンドを実行する必要がある。
 # make dump-autoload
 
-# **** Seederクラスの作成 ****
+# ------------
+
+#& Seederクラスの作成
 
 # make mkseed-<モデル名>
 mkseeder-%:
@@ -778,7 +842,9 @@ mkseeder:
 # mkseeder:
 # 	docker compose exec $(ctr) php artisan make:seeder $(table)TableSeeder
 
-# **** Seederの実行 ****
+# ------------
+
+#& Seederの実行
 
 seed:
 	docker compose exec $(ctr) php artisan db:seed
@@ -788,11 +854,14 @@ seed-class:
 # seed-class:
 # 	docker compose exec $(ctr) php artisan db:seed --class=$(table)TableSeeder
 
-# すでにテーブルにデータが入っている場合は、
+
+#^ すでにテーブルにデータが入っている場合は、
 # make refresh --seed
 # make fresh --seed
 
-# **** Factoryクラスの作成 ****
+# ------------
+
+#& Factoryクラスの作成
 
 # Laravel 6.x データベースのテスト
 # https://readouble.com/laravel/6.x/ja/database-testing.html
@@ -807,15 +876,16 @@ mkfactory-%:
 mkfactory:
 	docker compose exec $(ctr) php artisan make:factory $(model)Factory
 
-# 推奨
+#^ 推奨
 # 使用するEloquentモデルを指定してFactoryクラスを作成
 # https://e-seventh.com/laravel-modelfactory-faker/
 mkfactory-m:
 	docker compose exec $(ctr) php artisan make:factory $(model)Factory --model=$(model)
 
-# **** Faker ****
+# ------------
 
-# Fackerの日本語化
+#& Fackerの日本語化
+
 # config/app.php
 # 'faker_locale' => 'en_US', →  'faker_locale' => 'ja_JP',
 
@@ -836,7 +906,7 @@ mkfactory-m:
 # https://zenn.dev/fagai/articles/1ad4a85695c4f9
 
 
-# ---- リクエスト & バリデーション 関連 ----
+# **** Request & Validation関連 ****
 
 # Laravel 6.x HTTPリクエスト
 # https://readouble.com/laravel/6.x/ja/requests.html
@@ -871,7 +941,7 @@ mkreq-%:
 mkreq:
 	docker compose exec $(ctr) php artisan make:request $(model)Request
 
-# authorizeメソッドの戻り値をtureにすること忘れずに。
+#^ authorizeメソッドの戻り値をtureにすること忘れずに。
 
 # バリデーションの日本語化
 # config/app.php の 'locale' => 'ja', で切り替え
@@ -880,7 +950,8 @@ install-ja-lang:
 	docker compose exec $(ctr) php -f install-ja-lang.php
 	docker compose exec $(ctr) php -r "unlink('install-ja-lang.php');"
 
-# **** 手動方法① ****
+
+# ~~~~ 手動方法① ~~~~
 
 # Laravel 8.x auth.php言語ファイル - ReaDouble
 # https://readouble.com/laravel/8.x/ja/auth-php.html
@@ -906,7 +977,7 @@ install-ja-lang:
 # ⑵ 'attributes' => [], の設定
 
 
-# **** 手動方法② *****
+# ~~~~ 手動方法② ~~~~
 
 # 以下好きな方を選択
 
@@ -928,12 +999,13 @@ install-ja-lang:
 
 # ⑸ Requstファイルにattributesメソッドを定義
 
-# ---- Gate & Policy & Middleware関連 ----
+
+# **** Gate & Policy & Middleware関連 ****
 
 # Laravel 8.x 認可 - ReaDouble
 # https://readouble.com/laravel/8.x/ja/authorization.html
 
-# **** Laravel 認可の設定方法 参考記事 ****
+#? Laravel 認可の設定方法 参考記事
 
 # https://qiita.com/tomoeine/items/f92de7d035e0fe8e7362#policy
 # https://zenn.dev/tokatu/articles/8cc345b1e7a3a7#policy%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%A6%E3%81%BF%E3%82%8B
@@ -955,7 +1027,8 @@ mkpolicy-model:
 mkpolicy-model-%:
 	docker compose exec $(ctr) php artisan make:policy $(model)Policy --model=$(@:mkpolicy-model-%=%)
 
-# ---- メール関連 ----
+
+# **** Mail関連 ****
 
 mkmail:
 	docker compose exec $(ctr) php artisan make:mail $(class)Mail
@@ -964,7 +1037,7 @@ mknotification:
 	docker compose exec $(ctr) php artisan make:notification $(class)Notification
 
 
-# ---- キャッシュ関連 ----
+# **** Cache関連 ****
 
 optimize:
 	docker compose exec $(ctr) php artisan optimize
@@ -1007,7 +1080,8 @@ view-cache:
 view-clear:
 	docker compose exec $(ctr) php artisan view:clear
 
-# ---- Bladeコンポーネント関連 ----
+
+# **** Bladeコンポーネント関連 ****
 
 # Laravel 6.x Bladeテンプレート
 # https://readouble.com/laravel/6.x/ja/blade.html
@@ -1047,7 +1121,19 @@ mkcmp:
 # + users → 一般ユーザー用
 # + admin → 管理画面系
 
-# ---- その他 ----
+
+# **** CORS対策 ****
+
+# Laravel7以下
+# https://qiita.com/kyo-san/items/a507aa0b46037df1b139
+# オリジン間リソース共有 (CORS)
+# https://developer.mozilla.org/ja/docs/Web/HTTP/CORS
+
+mkcors:
+	docker compose exec $(ctr) php artisan make:middleware Cors
+
+
+# **** その他 ****
 
 serve:
 	docker compose exec $(ctr) php artisan serve
@@ -1068,16 +1154,8 @@ keygen-%:
 keyshow:
 	docker compose exec $(ctr) php artisan --no-ansi key:generate --show
 
-# ---- CORS対策 ----
 
-# Laravel7以下
-# https://qiita.com/kyo-san/items/a507aa0b46037df1b139
-# オリジン間リソース共有 (CORS)
-# https://developer.mozilla.org/ja/docs/Web/HTTP/CORS
-mkcors:
-	docker compose exec $(ctr) php artisan make:middleware Cors
-
-# ---- 単体テスト関連 ----
+# **** 単体テスト関連 ****
 
 tests:
 	docker compose exec $(ctr) php artisan test
@@ -1092,7 +1170,9 @@ test-class:
 test-method:
 	docker compose exec $(ctr) php artisan test tests/$(dir)/$(class)Test.php --filter=$(method)
 
-# **** Unitテスト ****
+# ----------------
+
+#& Unitテスト
 
 mktest-unit:
 	docker compose exec $(ctr) php artisan make:test $(model)Test --unit
@@ -1100,7 +1180,9 @@ mktest-unit:
 test-f:
 	docker compose exec $(ctr) php artisan test --filter $(model)Test
 
-# **** Featureテスト ****
+# ----------------
+
+#& Featureテスト
 
 mktest-feature:
 	docker compose exec $(ctr) php artisan make:test $(model)ControllerTest
@@ -1136,6 +1218,7 @@ pu-f:
 pu-t:
 	docker compose exec $(ctr) ./vendor/bin/phpunit --testsuite $(name)
 
+
 # ==== Composerコマンド群 ====
 
 # コマンド一覧
@@ -1150,8 +1233,11 @@ dump-autoload:
 clear-cache:
 	docker compose exec $(ctr) composer clear-cache
 
-c:
+composer:
 	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer install
+
+c:
+	@make composer
 
 # Composerのバージョン確認
 c-v:
@@ -1187,117 +1273,125 @@ c-outdated:
 # composer.jsonの修正（パッケージ記述の削除）もされる
 c-rm:
 	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer remove $(pkg)
-	
-	
-# ==== パッケージ管理コマンド群 ====
 
-# npm
+
+# ==== npm & yarnコマンド群 ====
+
+# **** npm ****
+
 npm:
 	@make npm-install
+
 npm-install:
 	docker compose exec web npm install
+
 npm-ci:
 	docker compose exec web npm ci
+
 npm-dev:
 	docker compose exec web npm run dev
+
 npm-watch:
 	docker compose exec web npm run watch
+
 npm-watch-poll:
 	docker compose exec web npm run watch-poll
+
 npm-hot:
 	docker compose exec web npm run hot
+
 npm-v:
 	docker compose exec web npm -v
+
 npm-init:
 	docker compose exec web npm init -y
+
 npm-i-D:
 	docker compose exec web npm i -D $(pkg)
+
 npm-run:
 	docker compose exec web npm run $(cmd)
+
 npm-un-D:
 	docker compose exec web npm uninstall -D $(pkg)
-# npx
+
+
+# **** npx ****
+
 npx-v:
 	docker compose exec web npx -v
 npx:
 	docker compose exec web npx $(pkg)
 
-# yarn
+
+# **** yarn ****
+
 yarn:
 	docker compose exec web yarn
+
 yarn-install:
 	@make yarn
 
-# npm ciに相当するyarnのコマンド
-# https://techblg.app/articles/npm-ci-in-yarn/
-# yarnのバージョンが2未満の場合
+#? npm ciに相当するyarnのコマンド
+#? https://techblg.app/articles/npm-ci-in-yarn/
+#? yarnのバージョンが2未満の場合
 yarn-ci:
 	docker compose exec web yarn install --frozen-lockfile
+
 yarn-ci-refresh:
 	rm -rf $(env)/node_modules
 	@make yarn-ci
 
-# yarnのversionが2以上の場合
+#? yarnのversionが2以上の場合
 yarn-ci-v2:
 	docker compose exec web yarn install --immutable --immutable-cache --check-cache
 
 yarn-dev:
 	docker compose exec web yarn dev
+
 yarn-watch:
 	docker compose exec web yarn watch
+
 yarn-watch-poll:
 	docker compose exec web yarn watch-poll
+
 yarn-hot:
 	docker compose exec web yarn hot
+
 yarn-v:
 	docker compose exec web yarn -v
+
 yarn-init:
 	docker compose exec web yarn init -y
+
 yarn-add:
 	docker compose exec web yarn add $(pkg)
+
 yarn-add-%:
 	docker compose exec web yarn add $(@:yarn-add-%=%)
+
 yarn-add-dev:
 	docker compose exec web yarn add -D $(pkg)
+
 yarn-add-dev-%:
 	docker compose exec web yarn add -D $(@:yarn-add-dev-%=%)
+
 yarn-run:
 	docker compose exec web yarn run $(cmd)
+
 yarn-run-s:
 	docker compose exec web yarn run $(pkg)
+
 yarn-rm:
 	docker compose exec web yarn remove $(pkg)
 
-# node
+
+# **** node ****
+
 node:
 	docker compose exec web node $(file)
-	
 
-# ==== パーミッション関連 ====
 
-# chown
-chown:
-	@make chown-data
-	@make chown-backend
-	
-# chown-ctr
-chown-backend:
-	sudo chown -R $(USER):$(GNAME) backend
-	
-chown-work:
-	docker compose exec $(ctr) bash -c 'chown -R $$USER_NAME:$$GROUP_NAME /work'
-	
-# chown-db
-chown-data:
-	sudo chown -R $(USER):$(GNAME) infra/data
-	
-chown-mysql:
-	docker compose exec db bash -c 'chown -R mysql:mysql /var/lib/mysql'
-	
-chown-postgres:
-	docker compose exec db bash -c 'chown -R postgres:postgres /var/lib/postgresql/data'
-	
-	
 # ==== Git & GitHub関連 ====
 
 # git msg=save
@@ -1767,6 +1861,7 @@ touch-sqlite:
 # https://qiita.com/Shitimi_613/items/bcd6a7f4134e6a8f0621
 # https://qiita.com/domodomodomo/items/04026157b75324e4ea27
 
+
 # ------------
 
 
@@ -1842,6 +1937,8 @@ touch-sqlite:
 #* Docker for Mac におけるディスク使用
 # https://docs.docker.jp/docker-for-mac/space.html
 
+# ----------------
+
 #^ DockerでIPアドレスが足りなくなったとき
 # docker network inspect $(docker network ls -q) | grep -E "Subnet|Name"
 # docker network ls
@@ -1865,8 +1962,12 @@ touch-sqlite:
 #   }
 # }
 
+# ----------------
+
 #^ docker networkの削除ができないときの対処方法
 # https://qiita.com/shundayo/items/8b24af5239d9162b253c
+
+# ----------------
 
 #^ error while removing network でDocker コンテナを終了できない時の対処方法
 # https://sun0range.com/information-technology/docker-error-while-removing-network/#%E3%83%8D%E3%83%83%E3%83%88%E3%83%AF%E3%83%BC%E3%82%AF%E5%89%8A%E9%99%A4%E3%82%92%E8%A9%A6%E3%81%BF%E3%82%8B
@@ -1879,6 +1980,8 @@ touch-sqlite:
 # # 確認
 # docker network ls
 
+# ----------------
+
 #^ コンテナが削除できない
 # https://engineer-ninaritai.com/docker-rm/
 
@@ -1888,6 +1991,34 @@ touch-sqlite:
 
 # 方法② オプションを付けて強制削除
 # docker rm -f [コンテナ]
+
+# ----------------
+
+#! ビルドに次のエラーが出る場合: apt update → GPG error → docker prune
+# https://til.toshimaru.net/2021-03-15
+# https://qiita.com/yukia3e/items/6e2536dd90d34a8b01cc
+# docker image prune -f
+# docker container prune -f
+
+# ----------------
+
+#? プロジェクトの階層を変更する方法
+
+# ◆ make launch前
+# 普通に移動させてmake laucnhすればいい。
+
+# ◆ make launch後
+# ソースコードが残さない場合:
+# ⑴ make destoryでソースコード,データ,コンテナ,イメージ,ボリューム,ネットワークを削除
+# ⑵ 移動させて、make launch
+
+# ソースコードを残す場合:
+# ⑴ make purgeでソースコードとデータ以外(コンテナ,イメージ,ボリューム,ネットワーク)を削除
+# ⑵ 移動させて、make init
+
+
+#! Error response from daemon: failed to mount local volume: ...
+# docker volumes ls grep <Voleme名> → docker volumes inspect <Volume名> → docker volumes rm <Volume名>
 
 
 # ==== Linuxコマンド群 ====
