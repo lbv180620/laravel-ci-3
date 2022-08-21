@@ -1234,7 +1234,7 @@ clear-cache:
 	docker compose exec $(ctr) composer clear-cache
 
 composer:
-	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer install
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer install --prefer-dist
 
 c:
 	@make composer
@@ -1273,6 +1273,26 @@ c-outdated:
 # composer.jsonの修正（パッケージ記述の削除）もされる
 c-rm:
 	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer remove $(pkg)
+
+
+# ----------------
+
+#! In PackageManifest.php line 131: Undefined index: name の対処法
+
+# 記事
+# https://monmon.jp/536/in-a-composer-install-of-laravel-in-packagemanifest-php-line-122-undefined-index-name-undefined-index/
+# https://qiita.com/fagai/items/15232a3f1a5a640d84a7
+# https://qiita.com/saboyutaka/items/7b959a43a45ce03626e6
+
+
+# 方法①: パッチバージョンを上げる
+# composer update
+
+# 方法②: composer を v1 に下げる
+# composer self-update --1
+
+#^ 下げたバージョンを戻す場合は
+# composer self-update --rollback
 
 
 # ==== npm & yarnコマンド群 ====
@@ -1315,6 +1335,11 @@ npm-run:
 npm-un-D:
 	docker compose exec web npm uninstall -D $(pkg)
 
+npm-audit-fix:
+	docker compose exec web npm audit fix
+
+npm-audit-fix-f:
+	docker compose exec web npm audit fix --force
 
 # **** npx ****
 
@@ -2873,8 +2898,9 @@ comp-add-agent:
 # laravel-mix
 # https://laravel-mix.com/docs/4.0/installation
 # https://qiita.com/tokimeki40/items/2c9112272a8b92bbaef9
-#
-# v6:
+
+
+#* v6:
 # Development
 # npx mix
 # Production
@@ -2883,13 +2909,15 @@ comp-add-agent:
 # npx mix watch
 # Hot Module Replacemen
 # npx mix watch --hot
-#
-# v5:
+
+
+#* v5:
 # –progress:ビルドの進捗状況を表示させるオプション
 # –hide-modules:モジュールについての情報を非表示にするオプション
 # –config:Laravel Mixで利用するwebpack.config.jsの読み込み
 # cross-env:環境依存を解消するためにインストールしたパッケージ
-#
+
+
 # package.json
 # "scripts": {
 #     "dev": "npm run development",
@@ -2899,6 +2927,8 @@ comp-add-agent:
 #     "prod": "npm run production",
 #     "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --config=node_modules/laravel-mix/setup/webpack.config.js"
 # }
+
+
 yarn-add-D-mix:
 	docker compose exec web yarn add -D laravel-mix glob cross-env rimraf
 
@@ -2921,6 +2951,20 @@ yarn-add-D-mix-pug:
 # https://laravel-mix.com/extensions/ejs
 yarn-add-D-mix-ejs:
 	docker compose exec web yarn add -D laravel-mix-ejs
+
+
+# ----------------
+
+#! 【Laravel】npm run devを実行したら –hide-modulesエラーが出た時の対処法
+
+# 記事
+# https://saunabouya.com/2021/06/15/laravel-npm-run-dev-hide-modules/
+# https://qiita.com/Yado_Tarou/items/e00a05b4d84ed40dc444
+# https://www.petadocs.com/laravel/article/11
+# https://www.sejuku.net/plus/question/detail/4960
+
+# laravel-mixの5系で使えていた–hide-modulesオプションが、6系では使えなくなったエラー
+
 
 # ==== gulp関連 ====
 
