@@ -1,0 +1,153 @@
+version: "3.8"
+volumes:
+  db-store:
+    # local volumeを有効にすると、以下のエラーが発生し、make db-setがこけて、dbコンテナがExit1となる。
+    # failed to retrieve console master: read unix /tmp/pty2940151148/pty.sock->@: EOF:
+    # 参考記事:
+    # B.3.3.6 MySQL の UNIX ソケットファイルを保護または変更する方法
+    # https://dev.mysql.com/doc/refman/8.0/ja/problems-with-mysql-sock.html
+    # 解決策:
+    # https://qiita.com/gentaro/items/7dec88e663f59b472de6
+    # https://nabinno.github.io/posts/58
+    # 事前にVolumeを作成する案
+    # https://qiita.com/Yukimura127/items/c798cf9c3b19498ab8bf
+    # driver: local
+    # driver_opts:
+    #   type: none
+    #   device: $PWD/infra/data
+    #   o: bind
+  redis-store:
+    driver: local
+    driver_opts:
+      type: none
+      device: $PWD/infra/redis
+      o: bind
+
+networks:
+  backend-net:
+    driver: bridge
+  # frontend-net:
+  #   driver: bridge
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: ./infra/docker/backend/php/Dockerfile
+    ports:
+      - ${WEB_PORT:-8080}:80
+    volumes:
+      - ./backend:/work/backend
+    environment:
+      - DB_HOST=${DB_HOST:-db}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_DATABASE=${DB_DATABASE:-laravel_local}
+      - DB_USERNAME=${DB_USERNAME:-phper}
+      - DB_PASSWORD=${DB_PASSWORD:-secret}
+      - USER_NAME=${UNAME}
+      - USER_ID=${UID}
+      - GROUP_NAME=${GNAME}
+      - GROUP_ID=${GID}
+    networks:
+      - backend-net
+    depends_on:
+      - db
+      - redis
+
+  db:
+    build:
+      context: .
+      dockerfile: ./infra/docker/backend/mysql/Dockerfile
+    ports:
+      - ${DB_PORT:-3306}:3306
+    volumes:
+      - ./infra/docker/backend/mysql/initdb.d:/docker-entrypoint-initdb.d
+      - db-store:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=${DB_DATABASE:-laravel_local}
+      - MYSQL_USER=${DB_USERNAME:-phper}
+      - MYSQL_PASSWORD=${DB_PASSWORD:-secret}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD:-secret}
+      - USER_NAME=${UNAME}
+      - USER_ID=${UID}
+      - GROUP_NAME=${GNAME}
+      - GROUP_ID=${GID}
+    tty: true
+    networks:
+      - backend-net
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - ${PMA_PORT:-4040}:80
+    volumes:
+      - ./infra/phpmyadmin/sessions:/sessions
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=db
+      - PMA_USER=${PMA_USER:-phper}
+      - PMA_PASSWORD=${PMA_PASS:-secret}
+    networks:
+      - backend-net
+    links:
+      - db
+
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - "redis-store:/data"
+    networks:
+      - backend-net
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      retries: 3
+      timeout: 5s
+
+  redisinsight:
+    image: redislabs/redisinsight:latest
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./infra/redisinsight:/db
+    tty: true
+    networks:
+      - backend-net
+    depends_on:
+      - redis
+  # webpackを使用する場合
+  # client:
+  #   build:
+  #     context: .
+  #     dockerfile: ./infra/docker/frontend/php/Dockerfile
+  #   ports:
+  #     - ${CLIENT_PORT:-8081}:80
+  #   volumes:
+  #     - ./frontend:/work/frontend
+  #   environment:
+  #     - USER_NAME=${UNAME}
+  #     - USER_ID=${UID}
+  #     - GROUP_NAME=${GNAME}
+  #     - GROUP_ID=${GID}
+  #   networks:
+  #     - frontend-net
+
+  # create-react-appを使用する場合
+  # client:
+  #   build:
+  #     context: .
+  #     dockerfile: ./infra/docker/frontend/node/Dockerfile
+  #   ports:
+  #     - ${CLIENT_PORT:-3001}:3001
+  #   volumes:
+  #     - ./frontend:/work/frontend
+  #   environment:
+  #     - USER_NAME=${UNAME}
+  #     - USER_ID=${UID}
+  #     - GROUP_NAME=${GNAME}
+  #     - GROUP_ID=${GID}
+  #   tty: true
+  #   networks:
+  #     - frontend-net
