@@ -178,7 +178,7 @@ laravel-install:
 	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer create-project --prefer-dist "laravel/laravel=$(laravel_version).*" .
 
 laravel-env:
-	cp env/docs/.env.example backend/.env && \
+	cp env/docs/.env.example backend/.env
 	cp env/docs/Makefile backend/Makefile
 	@make clear-cache
 
@@ -194,10 +194,10 @@ laravel-set:
 # backend単体で使う → mkdir backend
 # backendとfrontendを併用して使う → mkdir backend frontend
 file-set:
-	mkdir -p sqls/{sql,script} infra/{data,redis,pgadmin4} && \
-	touch sqls/sql/query.sql sqls/script/set-query.sh && \
-	mkdir -p .vscode && cp env/docs/{launch.json,settings.json} .vscode && \
-	cp env/docs/docker-compose.env .env && \
+	mkdir -p sqls/{sql,script} infra/{data,redis,pgadmin4}
+	touch sqls/sql/query.sql sqls/script/set-query.sh
+	mkdir -p .vscode && cp env/docs/{launch.json,settings.json} .vscode
+	cp env/docs/docker-compose.env .env
 	mkdir -p backend
 # mkdir -p backend frontend
 
@@ -268,6 +268,7 @@ useradd:
 # db-root
 	docker compose exec db bash -c ' \
 		useradd -s /bin/bash -m -u $$USER_ID -g $$GROUP_ID $$USER_NAME'
+
 groupadd:
 # ctr-root
 	docker compose exec $(ctr) bash -c ' \
@@ -276,10 +277,12 @@ groupadd:
 	docker compose exec db bash -c ' \
 		groupadd -g $$GROUP_ID $$GROUP_NAME'
 
+
 useradd-client:
 # client-root
 	docker compose exec client bash -c ' \
 		useradd -s /bin/bash -m -u $$USER_ID -g $$GROUP_ID $$USER_NAME'
+
 groupadd-client:
 # client-root
 	docker compose exec client bash -c ' \
@@ -563,6 +566,7 @@ laravel-v:
 # artisanコマンドの一覧
 art-l:
 	docker compose exec $(ctr) php artisan list
+
 
 # **** Migration関連 ****
 
@@ -1341,10 +1345,12 @@ npm-audit-fix:
 npm-audit-fix-f:
 	docker compose exec web npm audit fix --force
 
+
 # **** npx ****
 
 npx-v:
 	docker compose exec web npx -v
+
 npx:
 	docker compose exec web npx $(pkg)
 
@@ -2893,6 +2899,7 @@ comp-add-laravel-snappy:
 comp-add-agent:
 	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require jenssegers/agent
 
+
 # ==== Laravel Mix ====
 
 # laravel-mix
@@ -2965,14 +2972,6 @@ yarn-add-D-mix-ejs:
 
 # laravel-mixの5系で使えていた–hide-modulesオプションが、6系では使えなくなったエラー
 
-
-# ==== gulp関連 ====
-
-yarn-add-D-gulp:
-	docker compose exec web yarn add -D gulp browser-sync
-
-mkgulp:
-	cp env/gulpfile.js backend/
 
 # ===== webpack関連 =====
 
