@@ -885,6 +885,9 @@ mkfactory:
 # https://e-seventh.com/laravel-modelfactory-faker/
 mkfactory-m:
 	docker compose exec $(ctr) php artisan make:factory $(model)Factory --model=$(model)
+mkf:
+	@make mkfactory-m
+
 
 # ------------
 
@@ -1169,58 +1172,77 @@ test:
 test-%:
 	docker compose exec $(ctr) php artisan test --testsuite=$(@:test-%=%)
 
-test-class:
-	docker compose exec $(ctr) php artisan test tests/$(dir)/$(class)Test.php
+test-f:
+	docker compose exec $(ctr) php artisan test --filter $(model)Test
+
+test-model:
+	docker compose exec $(ctr) php artisan test tests/$(type)/$(model)Test.php
+
 test-method:
-	docker compose exec $(ctr) php artisan test tests/$(dir)/$(class)Test.php --filter=$(method)
+	docker compose exec $(ctr) php artisan test tests/$(type)/$(model)Test.php --filter=$(method)
+
 
 # ----------------
 
 #& Unitテスト
 
-mktest-unit:
+mktest-u:
 	docker compose exec $(ctr) php artisan make:test $(model)Test --unit
+mku:
+	@make mkunit
 
-test-f:
-	docker compose exec $(ctr) php artisan test --filter $(model)Test
 
 # ----------------
 
 #& Featureテスト
 
-mktest-feature:
-	docker compose exec $(ctr) php artisan make:test $(model)ControllerTest
+mktest-m:
+	docker compose exec $(ctr) php artisan make:test $(model)Test
 mktest:
-	@make mktest-feature
+	@make mktest-m
+mkm:
+	@make mktest-m
 
-test-feature-%:
+mktest-c:
+	docker compose exec $(ctr) php artisan make:test $(model)ControllerTest
+mkc:
+	@make mkfeature
+
+ft-%:
 	docker compose exec $(ctr) vendor/bin/phpunit tests/Feature/$(@:test-feature-%=%)ControllerTest
-test-feature:
+
+ft:
 	docker compose exec $(ctr) vendor/bin/phpunit tests/Feature/$(model)ControllerTest
 
 
 # ==== PHPUnitコマンド群 ====
 
+pu-v:
+	cd backend && ./vendor/bin/phpunit --version
+
+# --color はphpunit.xmlで設定している。
 phpunit:
-	docker compose exec $(ctr) ./vendor/bin/phpunit
+	cd backend && ./vendor/bin/phpunit $(path)
 
 pu:
 	@make phpunit
 
-pu-only:
-	docker compose exec $(ctr) ./vendor/bin/phpunit $(path)
-
 pu-d:
-	docker compose exec $(ctr) ./vendor/bin/phpunit --debug
+	cd backend && ./vendor/bin/phpunit $(path) --debug
 
-pu-v:
-	docker compose exec $(ctr) ./vendor/bin/phpunit --version
-
+# --filter - PHPUnit公式
+# https://phpunit.readthedocs.io/ja/latest/textui.html?highlight=--filter
 pu-f:
-	docker compose exec $(ctr) ./vendor/bin/phpunit --filter $(regex)
+	cd backend && ./vendor/bin/phpunit --filter $(rgx)
 
 pu-t:
-	docker compose exec $(ctr) ./vendor/bin/phpunit --testsuite $(name)
+	cd backend && ./vendor/bin/phpunit --testsuite $(name)
+
+pu-tf:
+	cd backend && ./vendor/bin/phpunit --testsuite $(name) --filter $(rgx)
+
+pu-ls:
+	cd backend && ./vendor/bin/phpunit --list-suite
 
 
 # ==== Composerコマンド群 ====
