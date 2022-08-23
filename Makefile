@@ -1852,25 +1852,25 @@ sw:
 
 # ※ローカル環境で使用可、仮想環境で使用不可
 
-# 方法⑴
-# ① make touch-sqlite データ保存用ファイルの作成
-# ② backend/.envの編集 DB_CONNECTION=sqliteとし、その他のDB_はコメントアウト
-# ③ backend/config/database.phpの編集 'database' => env(database_path('database.sqlite'), database_path('database.sqlite')), とする
-# ④ make mig テーブル作成
-# ⑤ DB Browser for SQLite でdatabase.sqliteを開き、確認
+# 方法①
+# ⑴ make touch-sqlite データ保存用ファイルの作成
+# ⑵ backend/.envの編集 DB_CONNECTION=sqliteとし、その他のDB_はコメントアウト
+# ⑶ backend/config/database.phpの編集 'database' => env(database_path('database.sqlite'), database_path('database.sqlite')), とする
+# ⑷ make mig テーブル作成
+# ⑸ DB Browser for SQLite でdatabase.sqliteを開き、確認
 
-# 方法⑵
-# ① make touch-sqlite データ保存用ファイルの作成
-# ② backend/.envの編集 DB_CONNECTION=sqliteとし、その他のDB_はコメントアウト
-# ③ edit.envを、DB_DATABASE=database/database.sqlite と書き換えて、make chenv
-# ④ make mig テーブル作成
-# ⑤ DB Browser for SQLite でdatabase.sqliteを開き、確認
+# 方法②
+# ⑴ make touch-sqlite データ保存用ファイルの作成
+# ⑵ backend/.envの編集 DB_CONNECTION=sqliteとし、その他のDB_はコメントアウト
+# ⑶ edit.envを、DB_DATABASE=database/database.sqlite と書き換えて、make chenv
+# ⑷ make mig テーブル作成
+# ⑸ DB Browser for SQLite でdatabase.sqliteを開き、確認
 
-# 方法⑶
-# ① make touch-sqlite データ保存用ファイルの作成
-# ② phpunit.xmlを、DB_CONNECTION=sqlite、DB_DATABASE=database/database.sqlite とする
-# ③ make mig テーブル作成
-# ④ DB Browser for SQLite でdatabase.sqliteを開き、確認
+# 方法③
+# ⑴ make touch-sqlite データ保存用ファイルの作成
+# ⑵ phpunit.xmlを、DB_CONNECTION=sqlite、DB_DATABASE=database/database.sqlite とする
+# ⑶ make mig テーブル作成
+# ⑷ DB Browser for SQLite でdatabase.sqliteを開き、確認
 # ※ メモリ上のDBを利用する場合は、phpunit.xmlのDB_CONNECTIONとDB_DATABASEをアンコメント
 
 touch-sqlite:
