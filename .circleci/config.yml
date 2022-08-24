@@ -6,11 +6,11 @@ jobs:
     working_directory: ~/laravel-ci-3/backend
     steps:
       - checkout:
-          path: ~/laravel-ci-3/backend
-      # - run: sudo composer self-update --1
+          path: ~/laravel-ci-3
+      - run: sudo composer self-update --1
       - run: composer install -n --prefer-dist
       - run: yarn install --frozen-lockfile
       - run: yarn run dev
       - run:
           name: php test
-          command: vender/bin/phpunit
+          command: ./vender/bin/phpunit
