@@ -491,6 +491,8 @@ stop-app:
 # web
 web:
 	docker compose exec web bash
+web-sh:
+	docker compose exec web sh
 web-usr:
 	docker compose exec -u $(USER) web bash
 stop-web:
