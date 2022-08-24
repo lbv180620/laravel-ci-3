@@ -7,20 +7,16 @@ jobs:
     steps:
       - checkout:
           path: ~/laravel-ci-3
-      - run:
-          name: directory check 1
-          command: |
-            pwd
-            ls
       - run: sudo composer self-update --1
+      - restore_cache:
+          key: composer-v1-{{ checksum "composer.lock"}}
       - run: composer install -n --prefer-dist
+      - save_cache:
+          key: composer-v1-{{ checksum "composer.lock"}}
+          paths:
+            - vendor
       - run: yarn install --frozen-lockfile
       - run: yarn run dev
-      - run:
-          name: directory check 2
-          command: |
-            pwd
-            ls
       - run:
           name: php test
           command: vendor/bin/phpunit
