@@ -3,5 +3,24 @@ jobs:
   build:
     docker:
       - image: circleci/php:7.3-node-browsers
+    working_directory: ~/laravel-ci-3/backend
     steps:
-      - run: echo "Hello World"  
+      - checkout:
+          path: ~/laravel-ci-3
+      - run:
+          name: directory check 1
+          command: |
+            pwd
+            ls
+      - run: sudo composer self-update --1
+      - run: composer install -n --prefer-dist
+      - run: yarn install --frozen-lockfile
+      - run: yarn run dev
+      - run:
+          name: directory check 2
+          command: |
+            pwd
+            ls
+      - run:
+          name: php test
+          command: vendor/bin/phpunit

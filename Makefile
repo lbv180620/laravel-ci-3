@@ -491,6 +491,8 @@ stop-app:
 # web
 web:
 	docker compose exec web bash
+web-sh:
+	docker compose exec web sh
 web-usr:
 	docker compose exec -u $(USER) web bash
 stop-web:
@@ -1155,9 +1157,13 @@ appenv:
 
 keygen:
 	docker compose exec $(ctr) php artisan key:generate
-keygen-%:
-	docker compose exec $(ctr) php artisan key:generate --env=$(@:keygen-%=%)
 
+keyenv:
+	docker compose exec $(ctr) php artisan key:generate --env=$(env)
+keyenv-%:
+	docker compose exec $(ctr) php artisan key:generate --env=$(@:keyenv-%=%)
+
+# --showオプションを付けることで、直接.envに値が設定されず、コンソールにキーが表示される。
 keyshow:
 	docker compose exec $(ctr) php artisan --no-ansi key:generate --show
 
@@ -1217,6 +1223,8 @@ ft:
 
 # ==== PHPUnitコマンド群 ====
 
+#**** ローカルでテストを実行する ****
+
 pu-v:
 	cd backend && ./vendor/bin/phpunit --version
 
@@ -1243,6 +1251,40 @@ pu-tf:
 
 pu-ls:
 	cd backend && ./vendor/bin/phpunit --list-suite
+
+
+#**** Docker環境でテストを実行する ****
+
+#! コンテナからテストを実行すると、コンテナに渡したDB_DATABASEの環境変数が邪魔をして、phpunit.xmlのDB_DATABASEの方を読み込んでくれない。
+#! テストを実行する度にDB_DATABASEを変更するのにmake upするのはめんどくさいので、ローカルで実行した方がいい。
+#! また.vscode/settings.jsonの設定も必要。
+
+#^ 環境変数の読み込み優先順位
+#^ docker-compose.yml > phpunit.xml > .env.testing
+
+#^ 環境変数を変更する必要がある場合は、「docker run -e」を使用する。
+
+
+dpu-v:
+	docker compose exec $(ctr) ./vendor/bin/phpunit --version
+
+dpu:
+	docker compose run -e DB_DATABASE=$(test) $(ctr) ./vendor/bin/phpunit $(path)
+
+dpu-d:
+	docker compose run -e DB_DATABASE=$(test) $(ctr) ./vendor/bin/phpunit --debug
+
+dpu-f:
+	docker compose run -e DB_DATABASE=$(test) $(ctr) ./vendor/bin/phpunit --filter $(regex)
+
+dpu-t:
+	docker compose run -e DB_DATABASE=$(test) $(ctr) ./vendor/bin/phpunit --testsuite $(name)
+
+dpu-tf:
+	docker compose run -e DB_DATABASE=$(test) $(ctr) ./vendor/bin/phpunit --testsuite $(name) --filter $(rgx)
+
+dpu-ls:
+	docker compose exec $(ctr) ./vendor/bin/phpunit --list-suite
 
 
 # ==== Composerコマンド群 ====
@@ -1899,6 +1941,15 @@ touch-sqlite:
 	docker compose exec web touch database/database.sqlite
 
 
+# **** コンテナに渡した環境変数を後から変更する方法 ****
+
+# 記事
+# https://qiita.com/KEINOS/items/518610bc2fdf5999acf2
+
+#? docker-composeで環境変数を渡すいくつかの方法
+# https://hawksnowlog.blogspot.com/2019/07/docker-compose-with-env-vals.html
+
+
 # ==== RDB Tips ====
 
 # MySQL 使い方
@@ -1983,6 +2034,9 @@ touch-sqlite:
 # 記事
 # https://zenn.dev/suzuki_hoge/books/2022-03-docker-practice-8ae36c33424b59
 # https://zenn.dev/suzuki_hoge/books/2021-04-docker-picture-60fbe950136be9c7ad85
+
+#* Docker コマンドチートシート
+# https://qiita.com/wMETAw/items/34ba5c980e2a38e548db
 
 #* Docker一括削除コマンドまとめ
 # https://qiita.com/boiyama/items/9972601ffc240553e1f3
