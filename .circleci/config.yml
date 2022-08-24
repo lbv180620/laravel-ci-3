@@ -21,6 +21,6 @@ jobs:
           command: |
             pwd
             ls
-      # - run:
-      #     name: php test
-      #     command: ./vender/bin/phpunit
+      - run:
+          name: php test
+          command: vender/bin/phpunit
