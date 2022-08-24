@@ -8,14 +8,19 @@ jobs:
       - checkout:
           path: ~/laravel-ci-3
       - run:
-          name: trial
+          name: directory check 1
           command: |
             pwd
             ls
-      # - run: sudo composer self-update --1
-      # - run: composer install -n --prefer-dist
-      # - run: yarn install --frozen-lockfile
-      # - run: yarn run dev
+      - run: sudo composer self-update --1
+      - run: composer install -n --prefer-dist
+      - run: yarn install --frozen-lockfile
+      - run: yarn run dev
+      - run:
+          name: directory check 2
+          command: |
+            pwd
+            ls
       # - run:
       #     name: php test
       #     command: ./vender/bin/phpunit
