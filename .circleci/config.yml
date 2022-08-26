@@ -53,9 +53,9 @@ jobs:
             sudo docker-php-ext-install pdo_pgsql
             dockerize -wait tcp://localhost:5432 -timeout 1m
       - run: curl -fSL https://github.com/haya14busa/reviewdog/releases/download/$REVIEWDOG_VERSION/reviewdog_linux_amd64 -o reviewdog && chmod +x .
-      - run: ./vendor/bin/phpcs --warning-severity=0 --standard=PSR2 --report=code --report-width=120 .
+      - run: ./vendor/bin/phpcs --warning-severity=0 --standard=PSR2 --report=code --report-width=120 ./app
       - run: |
-          ./vendor/bin/phpcs --error-severity=0 --runtime-set ignore_warnings_on_exit 1 --standard=PSR2 --report=emacs . | ./reviewdog -efm="%f:%l:%c: %m" -reporter=github-pr-review
+          ./vendor/bin/phpcs --error-severity=0 --runtime-set ignore_warnings_on_exit 1 --standard=PSR2 --report=emacs ./app | ./reviewdog -efm="%f:%l:%c: %m" -reporter=github-pr-review
       - run:
           name: php test
           command: vendor/bin/phpunit
