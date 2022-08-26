@@ -9,13 +9,12 @@ jobs:
           POSTGRES_DB: laravel_ci
           POSTGRES_USER: phper
           POSTGRES_PASSWORD: secret
-          # POSTGRES_INITDB_ARGS: --encoding=UTF-8
     environment:
       APP_ENV: testing
       DB_CONNECTION: pgsql
       DB_HOST: localhost
       DB_PORT: 5432
-      B_DATABASE: laravel_ci
+      DB_DATABASE: laravel_ci
       DB_USERNAME: phper
       DB_PASSWORD: secret
     working_directory: ~/laravel-ci-3/backend
@@ -54,6 +53,3 @@ jobs:
       - run:
           name: php test
           command: vendor/bin/phpunit
-# sudo gpg --recv-key 4EB27DB2A3B88B8B
-# sudo gpg -a --export 4EB27DB2A3B88B8B | sudo apt-key add -
-# sudo apt-get update --allow-releaseinfo-change
