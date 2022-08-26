@@ -59,6 +59,7 @@ xp:
 
 #* PHPコーディング規約
 # https://qiita.com/namizatork/items/79b0a8002575bc74dfd8
+# https://qiita.com/hshimo/items/04be1f432240c58300f4
 
 #* Laravel 論理削除(Soft Delete)の書き方
 # https://yutaro-blog.net/2022/03/10/laravel-softdelete/
@@ -1317,6 +1318,10 @@ pcs-source:
 pcs-checkstyle:
 	mkdir -p phpcs
 	docker compose exec $(ctr) ./vendor/bin/phpcs --report=checkstyle --report-file=phpcs/$(name)_phpcs.xml $(path)
+
+# コードの自動修正
+pcbf:
+	docker compose exec $(ctr) ./vendor/bin/phpcbf --standard=PSR2 $(path)
 
 
 # ==== Composerコマンド群 ====
