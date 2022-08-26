@@ -168,7 +168,9 @@ chinfra:
 	rm -rf infra/docker/backend/*
 	cp -rf env/configs/$(os)/$(web)/$(db)/backend/* infra/docker/backend
 	cp env/configs/$(os)/$(web)/$(db)/docker-compose.yml docker-compose.yml
-# cp env/configs/$wsl/Makefile Makefile
+
+chmk:
+	cp env/configs/wsl/Makefile Makefile
 
 
 # **** Laravelの設定 ****
@@ -1262,8 +1264,7 @@ pu-ls:
 #^ 環境変数の読み込み優先順位
 #^ docker-compose.yml > phpunit.xml > .env.testing
 
-#^ 環境変数を変更する必要がある場合は、「docker run -e」を使用する。
-
+#^ 環境変数を一時的に変更する必要がある場合は、「docker run -e」を使用する。
 
 dpu-v:
 	docker compose exec $(ctr) ./vendor/bin/phpunit --version
@@ -2146,7 +2147,8 @@ touch-sqlite:
 # **** PHPUnit ****
 
 comp-add-D-phpunit:
-	docker compose exec web composer require phpunit/phpunit --dev
+	docker compose exec $(ctr) composer require phpunit/phpunit --dev
+
 
 # **** DBUnit ****
 
@@ -2159,10 +2161,12 @@ comp-add-D-phpunit:
 #
 # composer update
 
+
 # **** phpdotenv ****
 
 comp-add-phpdotenv:
-	docker compose exec web composer require vlucas/phpdotenv
+	docker compose exec $(ctr) composer require vlucas/phpdotenv
+
 
 # **** Monolog ****
 
@@ -2170,19 +2174,22 @@ comp-add-phpdotenv:
 # https://reffect.co.jp/php/monolog-to-understand
 
 comp-add-monolog:
-	docker compose exec web composer require monolog/monolog
+	docker compose exec $(ctr) composer require monolog/monolog
+
 
 # **** MongoDB ****
 
 comp-add-mongodb:
-	docker compose exec web composer require "mongodb/mongodb"
+	docker compose exec $(ctr) composer require "mongodb/mongodb"
+
 
 # **** Laravel Collection ****
 
 # https://github.com/illuminate/support
 
 comp-add-laravel-collection:
-	docker compose exec web composer require illuminate/support
+	docker compose exec $(ctr) composer require illuminate/support
+
 
 # **** Carbon ****
 
@@ -2201,10 +2208,11 @@ comp-add-laravel-collection:
 # https://logical-studio.com/develop/development/laravel/20210709-laravel-carbon/
 
 comp-add-carbon:
-	docker compose exec web composer require nesbot/carbon
+	docker compose exec $(ctr) composer require nesbot/carbon
 
 # ※ laravelにはデフォルトでcarbonが入っているので、下記のようにuseで定義するだけで使うことができる。
 # use Carbon\Carbon;
+
 
 # **** PHP_CodeSniffer ****
 
@@ -2217,7 +2225,8 @@ comp-add-carbon:
 # https://qiita.com/atsu_kg/items/571def8d0d2d3d594e58
 
 comp-add-D-php_codesniffer:
-	docker compose exec web composer require "squizlabs/php_codesniffer=*" --dev
+	docker compose exec $(ctr) composer require "squizlabs/php_codesniffer=*" --dev
+
 
 # **** PHPCompatibility ****
 
@@ -2227,7 +2236,8 @@ comp-add-D-php_codesniffer:
 # https://qiita.com/e__ri/items/ed97da62eb5d5c4b2932
 
 comp-add-D-php-compatibility:
-	docker compose exec web composer require "phpcompatibility/php-compatibility=*" --dev
+	docker compose exec $(ctr) composer require "phpcompatibility/php-compatibility=*" --dev
+
 
 # **** PHPStan ****
 
@@ -2237,7 +2247,28 @@ comp-add-D-php-compatibility:
 # https://blog.shin1x1.com/entry/getting-stated-with-phpstan
 
 comp-add-D-phpsatn:
-	docker compose exec web composer require phpstan/phpstan --dev
+	docker compose exec $(ctr) composer require phpstan/phpstan --dev
+
+
+# **** Mockery ****
+
+# https://docs.mockery.io/en/latest/
+# https://github.com/mockery/mockery
+
+# 記事
+# https://qiita.com/zaburo/items/b559782179565bb1c538
+# http://tech.aainc.co.jp/archives/3918
+# https://maasaablog.com/development/laravel/2805/
+# https://toyo.hatenablog.jp/entry/2020/08/10/151148
+
+# Laravel Mockery
+# https://readouble.com/mockery/1.0/ja/index.html
+# https://zenn.dev/hashi8084/articles/16a8cf0b851035
+
+#^ Laravelでは標準で入っている。
+comp-add-D-mockery:
+	docker compose exec $(ctr) composer require mockery/mockery --dev
+
 
 # ==== Laravelで使える便利なComposerパッケージ関連 ====
 
@@ -2253,13 +2284,13 @@ comp-add-D-phpsatn:
 # https://qiita.com/ChiseiYamaguchi/items/7277aad6be309d0f7ae7
 
 install-recommend-packages:
-	docker compose exec web composer require doctrine/dbal
-	docker compose exec web composer require --dev barryvdh/laravel-ide-helper
-	docker compose exec web composer require --dev beyondcode/laravel-dump-server
-	docker compose exec web composer require --dev barryvdh/laravel-debugbar
-	docker compose exec web composer require --dev roave/security-advisories:dev-master
-	docker compose exec web php artisan vendor:publish --provider="BeyondCode\DumpServer\DumpServerServiceProvider"
-	docker compose exec web php artisan vendor:publish --provider="Barryvdh\Debugbar\ServiceProvider"
+	docker compose exec $(ctr) composer require doctrine/dbal
+	docker compose exec $(ctr) composer require --dev barryvdh/laravel-ide-helper
+	docker compose exec $(ctr) composer require --dev beyondcode/laravel-dump-server
+	docker compose exec $(ctr) composer require --dev barryvdh/laravel-debugbar
+	docker compose exec $(ctr) composer require --dev roave/security-advisories:dev-master
+	docker compose exec $(ctr) php artisan vendor:publish --provider="BeyondCode\DumpServer\DumpServerServiceProvider"
+	docker compose exec $(ctr) php artisan vendor:publish --provider="Barryvdh\Debugbar\ServiceProvider"
 
 install-preset-packages-v8:
 	@make install-dbal
@@ -2273,6 +2304,7 @@ install-preset-packages-v6:
 	@make install-ide-helper v=:2.8.2
 	@make ide-helper
 
+
 # **** Doctrine DBAL ****
 
 # https://github.com/doctrine/dbal
@@ -2285,7 +2317,8 @@ install-preset-packages-v6:
 # Laravel 6 -> v=:2.*
 
 install-dbal:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require --dev doctrine/dbal$(v)
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require --dev doctrine/dbal$(v)
+
 
 # **** Laravel Debugbar ****
 
@@ -2299,7 +2332,8 @@ install-dbal:
 # デバッグに便利な情報がブラウザ上で確認できるようになる。
 
 install-debuger:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require --dev barryvdh/laravel-debugbar
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require --dev barryvdh/laravel-debugbar
+
 
 # **** コード補完 ****
 
@@ -2316,28 +2350,30 @@ install-debuger:
 # メソッド定義元へのジャンプできる範囲が増えたり。
 
 install-ide-helper:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require --dev barryvdh/laravel-ide-helper$(v)
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require --dev barryvdh/laravel-ide-helper$(v)
+
 
 ide-helper:
-	docker compose exec web php artisan clear-compiled
+	docker compose exec $(ctr) php artisan clear-compiled
 	@make ide-helper-generate
 	@make ide-helper-models
 # @make ide-helper-meta
 
 # _ide_helper.php生成
 ide-helper-generate:
-	docker compose exec web php artisan ide-helper:generate
+	docker compose exec $(ctr) php artisan ide-helper:generate
 
 # _ide_helper_models.php生成
 ide-helper-models:
-	docker compose exec web php artisan ide-helper:models --nowrite
+	docker compose exec $(ctr) php artisan ide-helper:models --nowrite
 
 ide-helper-model:
-	docker compose exec web php artisan ide-helper:models "App\Models\$(model)" --nowrite
+	docker compose exec $(ctr) php artisan ide-helper:models "App\Models\$(model)" --nowrite
 
 # .phpstorm.meta.php生成(PHPStorm限定)
 ide-helper-meta:
-	docker compose exec web php artisan ide-helper:meta
+	docker compose exec $(ctr) php artisan ide-helper:meta
+
 
 # **** Laravel/uiライブラリ関連 ****
 
@@ -2348,25 +2384,26 @@ ide-helper-meta:
 # Laravel7 → v=:2.x
 # Laravel6 → v=:1.x
 install-laravel-ui:
-	docker compose exec web composer require --dev laravel/ui$(v)
+	docker compose exec $(ctr) composer require --dev laravel/ui$(v)
+
 
 # スキャフォールド
 # --auth: ログイン／ユーザー登録スカフォールドを生成
 
 install-bootstrap:
-	docker compose exec web php artisan ui bootstrap
+	docker compose exec $(ctr) php artisan ui bootstrap
 install-bootstrap-auth:
-	docker compose exec web php artisan ui bootstrap --auth
+	docker compose exec $(ctr) php artisan ui bootstrap --auth
 
 install-react:
-	docker compose exec web php artisan ui react
+	docker compose exec $(ctr) php artisan ui react
 install-react-auth:
-	docker compose exec web php artisan ui react --auth
+	docker compose exec $(ctr) php artisan ui react --auth
 
 install-vue:
-	docker compose exec web php artisan ui vue
+	docker compose exec $(ctr) php artisan ui vue
 install-vue-auth:
-	docker compose exec web php artisan ui vue --auth
+	docker compose exec $(ctr) php artisan ui vue --auth
 
 # public/js public/css生成
 # ※ エラーが出たら、make npm-dev | make yarn-dev
@@ -2379,6 +2416,7 @@ npm-scaffold:
 yarn-scaffold:
 	@make yarn-install
 	@make yarn-dev
+
 
 # ~~~~ マルチログインの実装 ~~~~
 
@@ -2410,18 +2448,20 @@ yarn-scaffold:
 # Telescope
 # Valet
 
+
 # **** Laravel Breeze ****
 
 # https://readouble.com/laravel/8.x/ja/starter-kits.html#laravel-breeze
 
 # Laravel Breeze ※Laravel 8以降
 install-breeze:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require --dev laravel/breeze
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require --dev laravel/breeze
 
 # ※npm-scaffold または yarn-scaffold が必要
 install-breeze-stale:
-	docker compose exec web php artisan breeze:install
+	docker compose exec $(ctr) php artisan breeze:install
 	@make yarn-scaffold
+
 
 # **** Laravel Cashier ****
 
@@ -2444,7 +2484,8 @@ install-breeze-stale:
 # Cashierを使用してはいけません。StripeかBraintreeのSDKを直接使用してください。
 
 install-cashier:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require laravel/cashier
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require laravel/cashier
+
 
 # **** Laravel Dusk ****
 
@@ -2462,13 +2503,15 @@ install-cashier:
 # https://qiita.com/t_kanno/items/55252cfa06ca51c1036e
 
 install-dusk:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require --dev laravel/dusk
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require --dev laravel/dusk
+
 
 # **** Fortify ****
 
 # 記事
 # https://zenn.dev/fagai/articles/ac283da2335e0467bb0f
 # https://reffect.co.jp/laravel/laravel8-fortify
+
 
 # **** Laravel Passport ****
 
@@ -2484,7 +2527,8 @@ install-dusk:
 # https://reffect.co.jp/laravel/laravel-passport-understand
 
 install-passport:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require laravel/passport
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require laravel/passport
+
 
 # **** Laravel Sanctum ****
 
@@ -2502,14 +2546,15 @@ install-passport:
 # ※Laravel8.6以降からLaravel Sanctumが標準でインストールされるので不要
 # https://github.com/laravel/sanctum/releases
 
+
 # ?--- SPA認証の実装 ---
 
 # https://yutaro-blog.net/2021/09/07/nextjs-laravel-sanctum-spa/
 
 # ①インストールとファイルの生成
 install-sanctum:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require laravel/sanctum
-	docker compose exec web php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require laravel/sanctum
+	docker compose exec $(ctr) php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
 
 # ②APIトークンを使用する場合は、この後マイグレートする。
 # make mig
@@ -2525,6 +2570,7 @@ install-sanctum:
 
 # ④config/sanctum.php の編集
 # localhostのポートを8080に変更
+
 
 # ?--- ユーザー認証設定 ----
 
@@ -2555,6 +2601,7 @@ install-sanctum:
 # return response()->json(true);
 # ⑶ PHPDocを修正
 
+
 # **** Laravel Scout + Algolia | Elasticsearch ****
 
 # Laravel 8.x Laravel Scout
@@ -2566,7 +2613,7 @@ install-sanctum:
 # Algoliaのドライバも用意されているため、とても便利。
 
 install-scout:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require laravel/scout
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require laravel/scout
 
 # 記事
 # https://www.algolia.com/
@@ -2574,14 +2621,15 @@ install-scout:
 # https://blog.capilano-fw.com/?p=3843
 # https://reffect.co.jp/laravel/laravel-scout
 install-algolia:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require algolia/algoliasearch-client-php
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require algolia/algoliasearch-client-php
 
 # 記事
 # https://public-constructor.com/laravel-scout-with-elasticsearch/#toc2
 # https://qiita.com/sola-msr/items/64d57d3970b715c795f5
 # https://liginc.co.jp/472808
 install-elasticsearch:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require elasticsearch/elasticsearch
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require elasticsearch/elasticsearch
+
 
 # **** Laravel Socialite ****
 
@@ -2598,7 +2646,8 @@ install-elasticsearch:
 # Laravel6 → v=:4.2.0以上
 
 install-socialite:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require laravel/socialite$(v)
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require laravel/socialite$(v)
+
 
 # **** Laravel Telescope ****
 
@@ -2615,7 +2664,8 @@ install-socialite:
 # https://biz.addisteria.com/laravel_telescope/
 
 install-telescope:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require --dev laravel/telescope
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require --dev laravel/telescope
+
 
 # **** Laravel Queue ****
 
@@ -2651,7 +2701,8 @@ install-telescope:
 # それ以下 → v=:^1.0
 
 comp-add-D-larastan:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require --dev nunomaduro/larastan$(v)
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require --dev nunomaduro/larastan$(v)
+
 
 # **** itsgoingd/clockwork ****
 
@@ -2664,7 +2715,8 @@ comp-add-D-larastan:
 # https://www.webopixel.net/php/1526.html
 
 comp-add-D-clockwork:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require itsgoingd/clockwork
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require itsgoingd/clockwork
+
 
 # **** laravelcollective/html ****
 
@@ -2690,7 +2742,8 @@ comp-add-D-clockwork:
 # ※Laravel5.8なら、laravelcollective/htmlの5.8を選ぶ。 v:=5.8
 
 comp-add-laravelcollective-html:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require laravelcollective/html$(v)
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require laravelcollective/html$(v)
+
 
 # **** wildside/userstamps ****
 
@@ -2701,7 +2754,8 @@ comp-add-laravelcollective-html:
 # ログイン中ユーザIDで自動更新してくれる。
 
 comp-add-userstamps:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require wildside/userstamps
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require wildside/userstamps
+
 
 # **** guzzlehttp/guzzle ****
 
@@ -2721,7 +2775,8 @@ comp-add-userstamps:
 # フロントエンドからajaxでAPIリクエストするときに利用。
 
 comp-add-guzzle:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require guzzlehttp/guzzle
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require guzzlehttp/guzzle
+
 
 # **** laracasts/flash ****
 
@@ -2733,7 +2788,8 @@ comp-add-guzzle:
 # 画面上部に「登録完了しました。」みたいなメッセージ表示をする。
 
 comp-add-flash:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require laracasts/flash
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require laracasts/flash
+
 
 # **** kyslik/column-sortable ****
 
@@ -2750,7 +2806,8 @@ comp-add-flash:
 # 昇順、降順ソートを切り替えられる。
 
 comp-add-column-sortable:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require kyslik/column-sortable
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require kyslik/column-sortable
+
 
 # **** league/flysystem-aws-s3-v3 ****
 
@@ -2772,7 +2829,8 @@ comp-add-column-sortable:
 # ※ Laravel9.xからleague/flysystemのv2がサポートなので、9系以降はv1。
 
 comp-add-flysystem-aws-s3-v3:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require -W league/flysystem-aws-s3-v3:^$(v).0
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require -W league/flysystem-aws-s3-v3:^$(v).0
+
 
 # **** aws/aws-sdk-php-laravel ****
 
@@ -2795,6 +2853,7 @@ comp-add-flysystem-aws-s3-v3:
 
 # composer update
 
+
 # **** orangehill/iseed ****
 
 # https://github.com/orangehill/iseed
@@ -2807,7 +2866,8 @@ comp-add-flysystem-aws-s3-v3:
 # 実際にDBに入っているデータからseederファイルを逆生成する。
 
 comp-add-D-iseed:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require --dev "orangehill/iseed"
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require --dev "orangehill/iseed"
+
 
 # **** Enum ****
 
@@ -2830,13 +2890,14 @@ comp-add-D-iseed:
 # https://github.com/myclabs/php-enum
 
 comp-add-php-enum-myclabs:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require myclabs/php-enum
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require myclabs/php-enum
 
 # bensampo/laravel-enum
 # https://github.com/BenSampo/laravel-enum
 
 comp-add-laravel-enum:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require bensampo/laravel-enum
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require bensampo/laravel-enum
+
 
 # **** spatie/laravel-menu ****
 
@@ -2845,7 +2906,8 @@ comp-add-laravel-enum:
 # 階層になっているメニューを生成できる。
 
 comp-add-laravel-menu:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require spatie/laravel-menu
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require spatie/laravel-menu
+
 
 # **** spatie/laravel-permission ****
 
@@ -2867,7 +2929,8 @@ comp-add-laravel-menu:
 # ユーザのロール・権限によるアクセス制御などが簡単。
 
 comp-add-laravel-permission:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require spatie/laravel-permission
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require spatie/laravel-permission
+
 
 # **** encore/laravel-admin ****
 
@@ -2880,7 +2943,8 @@ comp-add-laravel-permission:
 # https://zenn.dev/eri_agri/articles/e7c6f1690ab9d9
 
 comp-add-laravel-admin:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require encore/laravel-admin
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require encore/laravel-admin
+
 
 # **** davejamesmiller/laravel-breadcrumbs ****
 
@@ -2895,7 +2959,8 @@ comp-add-laravel-admin:
 # パンくずリストの表示や管理がしやすくなる。
 
 comp-add-laravel-laravel-breadcrumbs:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require diglactic/laravel-breadcrumbs
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require diglactic/laravel-breadcrumbs
+
 
 # **** league/csv ****
 
@@ -2910,7 +2975,8 @@ comp-add-laravel-laravel-breadcrumbs:
 # CSVのインポート・エクスポート処理を簡単にしてくれる。
 
 comp-add-csv:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require league/csv:^9.0
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require league/csv:^9.0
+
 
 # **** barryvdh/laravel-dompdf ****
 
@@ -2932,7 +2998,8 @@ comp-add-csv:
 # https://github.com/dompdf/utils
 
 comp-add-laravel-dompdf:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require barryvdh/laravel-dompdf
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require barryvdh/laravel-dompdf
+
 
 # **** barryvdh/laravel-snappy ****
 
@@ -2959,7 +3026,8 @@ comp-add-laravel-dompdf:
 # https://reffect.co.jp/laravel/how_to_create_pdf_in_laravel_snappy#MACWKhtmltopdf
 
 comp-add-laravel-snappy:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require barryvdh/laravel-snappy
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require barryvdh/laravel-snappy
+
 
 # **** jenssegers/agent ****
 
@@ -2973,7 +3041,7 @@ comp-add-laravel-snappy:
 # ユーザエージェントの取得、判定処理をできる
 
 comp-add-agent:
-	docker compose exec web php -d memory_limit=-1 /usr/bin/composer require jenssegers/agent
+	docker compose exec $(ctr) php -d memory_limit=-1 /usr/bin/composer require jenssegers/agent
 
 
 # ==== Laravel Mix ====
@@ -3048,6 +3116,13 @@ yarn-add-D-mix-ejs:
 
 # laravel-mixの5系で使えていた–hide-modulesオプションが、6系では使えなくなったエラー
 
+# ==== gulp関連 ====
+
+yarn-add-D-gulp:
+	docker compose exec web yarn add -D gulp browser-sync
+
+mkgulp:
+	cp env/gulpfile.js backend/
 
 # ===== webpack関連 =====
 
