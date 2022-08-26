@@ -1,4 +1,5 @@
-FROM postgres:14.5-bullseye
+FROM postgres:11.14-bullseye
+# FROM postgres:14.5-bullseye
 
 # timezone environment
 ENV TZ=Asia/Tokyo \
