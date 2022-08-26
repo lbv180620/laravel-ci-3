@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<checkstyle version="3.7.1">
+<file name="/work/backend/app/Http/Controllers/UserController.php">
+ <error line="22" column="9" severity="error" message="The var keyword must not be used to declare a property" source="PSR2.Classes.PropertyDeclaration.VarUsed"/>
+ <error line="22" column="9" severity="error" message="There must not be more than one property declared per statement" source="PSR2.Classes.PropertyDeclaration.Multiple"/>
+ <error line="22" column="9" severity="error" message="Visibility must be declared on property &quot;$bbb&quot;" source="PSR2.Classes.PropertyDeclaration.ScopeMissing"/>
+ <error line="89" column="1" severity="error" message="Expected 1 newline at end of file; 0 found" source="PSR2.Files.EndFileNewline.NoneFound"/>
+</file>
+</checkstyle>
+

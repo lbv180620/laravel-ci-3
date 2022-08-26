@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<checkstyle version="3.7.1">
+<file name="/work/backend/app/Http/Controllers/UserController.php">
+ <error line="22" column="9" severity="error" message="The var keyword must not be used to declare a property" source="PSR2.Classes.PropertyDeclaration.VarUsed"/>
+ <error line="22" column="9" severity="error" message="There must not be more than one property declared per statement" source="PSR2.Classes.PropertyDeclaration.Multiple"/>
+ <error line="22" column="9" severity="error" message="Visibility must be declared on property &quot;$bbb&quot;" source="PSR2.Classes.PropertyDeclaration.ScopeMissing"/>
+ <error line="89" column="1" severity="error" message="Expected 1 newline at end of file; 0 found" source="PSR2.Files.EndFileNewline.NoneFound"/>
+</file>
+<file name="/work/backend/database/factories/ArticleFactory.php">
+ <error line="17" column="3" severity="error" message="Expected 1 newline at end of file; 0 found" source="PSR2.Files.EndFileNewline.NoneFound"/>
+</file>
+<file name="/work/backend/database/migrations/2014_10_12_000000_create_users_table.php">
+ <error line="7" column="1" severity="error" message="Each class must be in a namespace of at least one level (a top-level vendor name)" source="PSR1.Classes.ClassDeclaration.MissingNamespace"/>
+</file>
+<file name="/work/backend/database/migrations/2014_10_12_100000_create_password_resets_table.php">
+ <error line="7" column="1" severity="error" message="Each class must be in a namespace of at least one level (a top-level vendor name)" source="PSR1.Classes.ClassDeclaration.MissingNamespace"/>
+</file>
+<file name="/work/backend/database/migrations/2019_08_19_000000_create_failed_jobs_table.php">
+ <error line="7" column="1" severity="error" message="Each class must be in a namespace of at least one level (a top-level vendor name)" source="PSR1.Classes.ClassDeclaration.MissingNamespace"/>
+</file>
+<file name="/work/backend/database/migrations/2020_01_23_221657_create_articles_table.php">
+ <error line="7" column="1" severity="error" message="Each class must be in a namespace of at least one level (a top-level vendor name)" source="PSR1.Classes.ClassDeclaration.MissingNamespace"/>
+</file>
+<file name="/work/backend/database/migrations/2020_02_14_212406_create_likes_table.php">
+ <error line="7" column="1" severity="error" message="Each class must be in a namespace of at least one level (a top-level vendor name)" source="PSR1.Classes.ClassDeclaration.MissingNamespace"/>
+</file>
+<file name="/work/backend/database/migrations/2020_02_16_205740_create_tags_table.php">
+ <error line="7" column="1" severity="error" message="Each class must be in a namespace of at least one level (a top-level vendor name)" source="PSR1.Classes.ClassDeclaration.MissingNamespace"/>
+</file>
+<file name="/work/backend/database/migrations/2020_02_16_205945_create_article_tag_table.php">
+ <error line="7" column="1" severity="error" message="Each class must be in a namespace of at least one level (a top-level vendor name)" source="PSR1.Classes.ClassDeclaration.MissingNamespace"/>
+</file>
+<file name="/work/backend/database/migrations/2020_02_18_100555_create_follows_table.php">
+ <error line="7" column="1" severity="error" message="Each class must be in a namespace of at least one level (a top-level vendor name)" source="PSR1.Classes.ClassDeclaration.MissingNamespace"/>
+</file>
+<file name="/work/backend/database/seeds/DatabaseSeeder.php">
+ <error line="5" column="1" severity="error" message="Each class must be in a namespace of at least one level (a top-level vendor name)" source="PSR1.Classes.ClassDeclaration.MissingNamespace"/>
+</file>
+<file name="/work/backend/resources/js/app.js">
+ <error line="8" column="3" severity="error" message="Line indented incorrectly; expected 4 spaces, found 2" source="Generic.WhiteSpace.ScopeIndent.IncorrectExact"/>
+ <error line="9" column="3" severity="error" message="Line indented incorrectly; expected 4 spaces, found 2" source="Generic.WhiteSpace.ScopeIndent.IncorrectExact"/>
+ <error line="10" column="5" severity="error" message="Line indented incorrectly; expected at least 8 spaces, found 4" source="Generic.WhiteSpace.ScopeIndent.Incorrect"/>
+ <error line="11" column="5" severity="error" message="Line indented incorrectly; expected at least 8 spaces, found 4" source="Generic.WhiteSpace.ScopeIndent.Incorrect"/>
+ <error line="12" column="5" severity="error" message="Line indented incorrectly; expected at least 8 spaces, found 4" source="Generic.WhiteSpace.ScopeIndent.Incorrect"/>
+ <error line="13" column="3" severity="error" message="Line indented incorrectly; expected 4 spaces, found 2" source="Generic.WhiteSpace.ScopeIndent.IncorrectExact"/>
+</file>
+<file name="/work/backend/tests/Feature/ArticleControllerTest.php">
+ <error line="42" column="1" severity="error" message="Expected 1 newline at end of file; 0 found" source="PSR2.Files.EndFileNewline.NoneFound"/>
+</file>
+<file name="/work/backend/tests/Feature/ArticleTest.php">
+ <error line="50" column="1" severity="error" message="Expected 1 newline at end of file; 0 found" source="PSR2.Files.EndFileNewline.NoneFound"/>
+</file>
+</checkstyle>
+
