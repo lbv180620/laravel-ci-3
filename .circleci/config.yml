@@ -3,8 +3,8 @@ jobs:
   build:
     docker:
       - image: circleci/php:7.3-node-browsers
-      - image: circleci/postgres:11.6-alpine
-        # - image: circleci/postgres:11.14-bullseye
+      # - image: circleci/postgres:11.6-alpine
+      - image: circleci/postgres:11.14-bullseye
         environment:
           POSTGRES_DB: laravel_ci
           POSTGRES_USER: phper
