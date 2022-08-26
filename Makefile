@@ -1288,6 +1288,37 @@ dpu-ls:
 	docker compose exec $(ctr) ./vendor/bin/phpunit --list-suite
 
 
+# ==== PHP_CodeSniffierコマンド群 ====
+
+# 使い方:
+# https://qiita.com/atsu_kg/items/571def8d0d2d3d594e58
+
+# ヘルプを表示
+pcs-h:
+	docker compose exec $(ctr) ./vendor/bin/phpcs -h
+
+# デフォルトで使用可能なコーディング規約を確認
+pcs-i:
+	docker compose exec $(ctr) ./vendor/bin/phpcs -i
+
+# 設定したチェックルールの一覧を確認
+pcs-e:
+	docker compose exec $(ctr) ./vendor/bin/phpcs -e
+
+# ファイル別に結果を出力
+pcs-summary:
+	docker compose exec $(ctr) ./vendor/bin/phpcs --report=summary $(path)
+
+# ルール別に結果を出力
+pcs-source:
+	docker compose exec $(ctr) ./vendor/bin/phpcs --report=source $(path)
+
+# 結果レポートをファイルとして出力
+pcs-checkstyle:
+	mkdir -p phpcs
+	docker compose exec $(ctr) ./vendor/bin/phpcs --report=checkstyle --report-file=phpcs/$(name)_phpcs.xml $(path)
+
+
 # ==== Composerコマンド群 ====
 
 # コマンド一覧
