@@ -19,7 +19,6 @@ class UserController extends Controller
             'articles' => $articles,
         ]);
     }
-    var $bbb
 
     public function likes(string $name)
     {
