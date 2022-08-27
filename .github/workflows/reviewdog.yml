@@ -19,10 +19,11 @@ jobs:
         with:
           reviewdog_version: latest
       - name: Setup PHP 7.2
-        run: sudo update-alternatives --set php /usr/bin/php7.2
-      - name: composer update
-        run: composer update
-      - name: composer install
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "7.2"
+          tools: composer:v2
+      - name: Resolve dependencies
         run: composer install -n --prefer-dist
       - name: lint
         env:
@@ -38,9 +39,10 @@ jobs:
         with:
           reviewdog_version: latest
       - name: Setup PHP 7.2
-        run: sudo update-alternatives --set php /usr/bin/php7.2
-      - name: composer update
-        run: composer update
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "7.2"
+          tools: composer:v2
       - name: composer install
         run: composer install -n --prefer-dist
       - name: analyse
