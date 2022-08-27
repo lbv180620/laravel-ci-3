@@ -52,12 +52,12 @@ jobs:
             sudo apt-get install libpq-dev
             sudo docker-php-ext-install pdo_pgsql
             dockerize -wait tcp://localhost:5432 -timeout 1m
-      - run:
-          name: lint
-          command: ./vendor/bin/phpcs --warning-severity=0 --standard=PSR2 --report=code --report-width=120 ./app
-      - run:
-          name: analyse
-          command: ./vendor/bin/phpstan analyse
+      # - run:
+      #     name: lint
+      #     command: ./vendor/bin/phpcs --warning-severity=0 --standard=PSR2 --report=code --report-width=120 ./app
+      # - run:
+      #     name: analyse
+      #     command: ./vendor/bin/phpstan analyse
       - run:
           name: php test
           command: ./vendor/bin/phpunit
