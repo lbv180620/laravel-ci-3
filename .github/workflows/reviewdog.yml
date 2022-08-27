@@ -18,6 +18,8 @@ jobs:
       - uses: reviewdog/action-setup@v1
         with:
           reviewdog_version: latest
+      - name: Setup PHP 7.2
+        run: sudo update-alternatives --set php /usr/bin/php7.2
       - name: composer update
         run: composer update
       - name: composer install
@@ -35,6 +37,8 @@ jobs:
       - uses: reviewdog/action-setup@v1
         with:
           reviewdog_version: latest
+      - name: Setup PHP 7.2
+        run: sudo update-alternatives --set php /usr/bin/php7.2
       - name: composer update
         run: composer update
       - name: composer install
