@@ -18,7 +18,9 @@ jobs:
       - uses: reviewdog/action-setup@v1
         with:
           reviewdog_version: latest
-      - name: code sniffer install
+      - name: composer update
+        run: composer update
+      - name: composer install
         run: composer install -n --prefer-dist
       - name: lint
         env:
@@ -33,7 +35,9 @@ jobs:
       - uses: reviewdog/action-setup@v1
         with:
           reviewdog_version: latest
-      - name: phpstan install
+      - name: composer update
+        run: composer update
+      - name: composer install
         run: composer install -n --prefer-dist
       - name: analyse
         env:
