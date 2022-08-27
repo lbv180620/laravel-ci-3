@@ -54,7 +54,7 @@ jobs:
             dockerize -wait tcp://localhost:5432 -timeout 1m
       - run:
           name: lint
-          command: ./vendor/bin/phpcs --warning-severity=0 --standard=PSR2 --report=code --report-width=120 ./app
+          command: ./vendor/bin/phpcs --warning-severity=0 --standard=phpcs.xml --report=code --report-width=120 ./
       - run:
           name: analyse
           command: ./vendor/bin/phpstan analyse
