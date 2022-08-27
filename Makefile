@@ -1289,7 +1289,7 @@ dpu-ls:
 	docker compose exec $(ctr) ./vendor/bin/phpunit --list-suite
 
 
-# ==== PHP_CodeSniffierコマンド群 ====
+# ==== PHP_CodeSniffier & PHPStanコマンド群 ====
 
 # 使い方:
 # https://qiita.com/atsu_kg/items/571def8d0d2d3d594e58
@@ -1327,6 +1327,10 @@ pcs-checkstyle:
 # コードの自動修正
 pcbf:
 	docker compose exec $(ctr) ./vendor/bin/phpcbf --standard=PSR2 $(path)
+
+# 静的解析
+analyse:
+	docker compose exec $(ctr) ./vendor/bin/phpstan analyse --memory-limit=2G
 
 
 # ==== Composerコマンド群 ====
@@ -2290,14 +2294,17 @@ comp-add-D-php-compatibility:
 comp-add-D-phpsatn:
 	docker compose exec $(ctr) composer require phpstan/phpstan --dev
 
+
 # **** Larastan ****
 
 # https://github.com/nunomaduro/larastan
 # https://github.com/nunomaduro/larastan/releases
 
 # 記事
+# https://mylevel.site/2022/05/15/laravel-larastan/
 # https://qiita.com/MasaKu/items/7ed6636a57fae12231e0
 # https://zenn.dev/naoki0722/articles/090bd3309474d9
+# https://zenn.dev/bz0/articles/3e7fec1577511b
 
 #^ 一緒に PHPStan もインストールしてくれる
 # PHP 8.0+, Laravel 9.0+ → v=:^2.0
