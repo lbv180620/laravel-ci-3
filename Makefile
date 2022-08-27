@@ -1294,6 +1294,11 @@ dpu-ls:
 # 使い方:
 # https://qiita.com/atsu_kg/items/571def8d0d2d3d594e58
 
+# Code Snifferのエラー文メモ
+# https://gist.github.com/kkkw/d926a930a99485214925f22621d56230
+# https://qiita.com/nnmr/items/00f6cb1355c551604d0e
+# https://www.ninton.co.jp/archives/6360
+
 # ヘルプを表示
 pcs-h:
 	docker compose exec $(ctr) ./vendor/bin/phpcs -h
