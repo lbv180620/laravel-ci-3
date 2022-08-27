@@ -5,8 +5,8 @@ jobs:
       - image: circleci/php:7.3-node-browsers
         environment:
           REVIEWDOG_VERSION: "0.9.11"
-      # - image: circleci/postgres:11.6-alpine
-      - image: circleci/postgres:11.14-bullseye
+      - image: circleci/postgres:11.6-alpine
+        # - image: circleci/postgres:11.14-bullseye
         environment:
           POSTGRES_DB: laravel_ci
           POSTGRES_USER: phper
@@ -53,5 +53,11 @@ jobs:
             sudo docker-php-ext-install pdo_pgsql
             dockerize -wait tcp://localhost:5432 -timeout 1m
       - run:
+          name: lint
+          command: ./vendor/bin/phpcs --warning-severity=0 --standard=PSR2 --report=code --report-width=120 ./app
+      - run:
+          name: analyse
+          command: ./vendor/bin/phpstan analyse
+      - run:
           name: php test
-          command: vendor/bin/phpunit
+          command: ./vendor/bin/phpunit
