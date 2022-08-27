@@ -19,7 +19,7 @@ jobs:
         with:
           reviewdog_version: latest
       - name: code sniffer install
-        run: composer require squizlabs/php_codesniffer --dev
+        run: composer install -n --prefer-dist
       - name: lint
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -34,7 +34,7 @@ jobs:
         with:
           reviewdog_version: latest
       - name: phpstan install
-        run: composer require phpstan/phpstan --dev
+        run:composer install -n --prefer-dist
       - name: analyse
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
