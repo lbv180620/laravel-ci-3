@@ -34,7 +34,7 @@ jobs:
         with:
           reviewdog_version: latest
       - name: phpstan install
-        run:composer install -n --prefer-dist
+        run: composer install -n --prefer-dist
       - name: analyse
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
