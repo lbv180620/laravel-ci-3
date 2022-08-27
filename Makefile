@@ -2285,6 +2285,21 @@ comp-add-D-php-compatibility:
 comp-add-D-phpsatn:
 	docker compose exec $(ctr) composer require phpstan/phpstan --dev
 
+# **** Larastan ****
+
+# https://github.com/nunomaduro/larastan
+# https://github.com/nunomaduro/larastan/releases
+
+# 記事
+# https://qiita.com/MasaKu/items/7ed6636a57fae12231e0
+# https://zenn.dev/naoki0722/articles/090bd3309474d9
+
+#^ 一緒に PHPStan もインストールしてくれる
+# PHP 8.0+, Laravel 9.0+ → v=:^2.0
+
+comp-add-D-larasatn:
+	docker compose exec $(ctr) composer require nunomaduro/larastan$(v) --dev
+
 
 # **** Mockery ****
 
