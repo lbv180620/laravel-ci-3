@@ -2288,6 +2288,7 @@ comp-add-D-phpsatn:
 # **** Larastan ****
 
 # https://github.com/nunomaduro/larastan
+# https://github.com/nunomaduro/larastan/releases
 
 # 記事
 # https://qiita.com/MasaKu/items/7ed6636a57fae12231e0
